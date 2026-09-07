@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NBA Game Test</title>
+</head>
+<body>
+  <h1>NBA Player Game - Connection Test</h1>
+  <p id="status">Connecting...</p>
+
+  <!-- Load Socket.io Client Library -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:42069');
+    const statusEl = document.getElementById('status');
+
+    socket.on('connect', () => {
+      console.log('Connected! Socket ID:', socket.id);
+      statusEl.innerText = 'Connected! Socket ID: ' + socket.id;
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from server');
+      statusEl.innerText = 'Disconnected';
+    });
+  </script>
+</body>
+</html>

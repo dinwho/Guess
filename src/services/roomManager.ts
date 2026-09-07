@@ -1,4 +1,4 @@
-import {Player, RoomState} from '../types/room';
+import type {Player, RoomState} from '../types/room.js';
 
 export class RoomManager {
     private rooms: Record<string, RoomState> = {};
