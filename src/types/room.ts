@@ -5,6 +5,14 @@ export interface Player{
     score: number;
 }
 
+export interface NbaPlayer{
+    id: string;
+    name: string;
+    team: string;
+    aliases: string[];
+}
+
+
 export interface RoomState{
     roomId: string;
     hostId: string;

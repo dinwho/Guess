@@ -73,4 +73,28 @@ export class RoomManager {
     public getRoom(roomId: string): RoomState | undefined {
         return this.rooms[roomId];
     }
+
+    public getRoomBySocketId(socketId: string): RoomState | undefined {
+    for (const room of Object.values(this.rooms)) {
+      if (room.players[socketId]) {
+        return room;
+      }
+    }
+    return undefined;
+  }
+
+  public startGame(roomId: string): RoomState | null {
+    const room = this.rooms[roomId];
+    if (!room) return null;
+
+    room.status = 'PLAYING';
+    room.currentRound = 1;
+
+    const randomIndex = Math.floor(Math.random() * 4);
+    
+    return room;
+  }
+
+
+
 }

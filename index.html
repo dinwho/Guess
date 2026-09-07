@@ -1,27 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>NBA Game Test</title>
+  <meta charset="UTF-8">
+  <title>NBA Guessing Game - Test UI</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; background: #111; color: #fff; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    button { background: #10B981; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background: #059669; }
+    .card { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+    #game-area { display: none; }
+  </style>
 </head>
 <body>
-  <h1>NBA Player Game - Connection Test</h1>
-  <p id="status">Connecting...</p>
 
-  <!-- Load Socket.io Client Library -->
+  <h1>🏀 NBA Player Game</h1>
+
+  <!-- LOBBY SETUP SCREEN -->
+  <div id="setup-area" class="card">
+    <h3>Join or Create a Room</h3>
+    <input type="text" id="username" placeholder="Enter your username..." />
+    <button id="create-btn">Create Room</button>
+    <hr style="border-color: #444; margin: 15px 0;" />
+    <input type="text" id="room-code-input" placeholder="Enter 4-letter Room Code..." />
+    <button id="join-btn">Join Room</button>
+  </div>
+
+  <!-- ACTIVE ROOM SCREEN -->
+  <div id="game-area" class="card">
+    <h3 id="room-title">Room: ---</h3>
+    <p><strong>Players in Lobby:</strong></p>
+    <ul id="players-list"></ul>
+    <p id="host-notice" style="color: #F59E0B; display: none;">You are the host!</p>
+  </div>
+  <!-- Inside #game-area in index.html -->
+  <button id="start-btn" style="display: none; background: #3B82F6;">Start Game</button>
+  <div id="active-game-view" style="display: none;">
+    <p style="color: #38BDF8; font-weight: bold;">Round active! Guess the player!</p>
+    <p id="secret-debug" style="font-size: 12px; color: #888;"></p> <!-- Temporary debug view -->
+  </div>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     const socket = io('http://localhost:42069');
-    const statusEl = document.getElementById('status');
 
-    socket.on('connect', () => {
-      console.log('Connected! Socket ID:', socket.id);
-      statusEl.innerText = 'Connected! Socket ID: ' + socket.id;
+    const setupArea = document.getElementById('setup-area');
+    const gameArea = document.getElementById('game-area');
+    const usernameInput = document.getElementById('username');
+    const roomCodeInput = document.getElementById('room-code-input');
+    const playersList = document.getElementById('players-list');
+    const roomTitle = document.getElementById('room-title');
+    const hostNotice = document.getElementById('host-notice');
+    const startBtn = document.getElementById('start-btn');
+    const activeGameView = document.getElementById('active-game-view');
+    const secretDebug = document.getElementById('secret-debug');
+
+    startBtn.addEventListener('click', () => {
+      socket.emit('start_game');
     });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      statusEl.innerText = 'Disconnected';
+    socket.on('room_state_updated', (room) => {
+      playersList.innerHTML = '';
+      let isUserHost = false;
+
+      Object.values(room.players).forEach(player => {
+        const li = document.createElement('li');
+        li.innerText = player.username + (player.isHost ? ' (Host)' : '');
+        playersList.appendChild(li);
+
+        if (player.id === socket.id && player.isHost) {
+          isUserHost = true;
+        }
+      });
+
+      // Show/Hide start button based on host status and game state
+      if (isUserHost && room.status === 'LOBBY') {
+        startBtn.style.display = 'block';
+      } else {
+        startBtn.style.display = 'none';
+      }
+
+      // If game has started, swap views
+      if (room.status === 'PLAYING') {
+        setupArea.style.display = 'none';
+        gameArea.style.display = 'block';
+        startBtn.style.display = 'none';
+        activeGameView.style.display = 'block';
+        
+        // Temporary debug so you can see what player the server picked
+        secretDebug.innerText = `[Debug Secret Player]: ${room.secretPlayer.name} (${room.secretPlayer.team})`;
+      }
+    });
+    document.getElementById('create-btn').addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      if (!username) return alert('Enter a username first!');
+
+      socket.emit('create_room', { username }, (res) => {
+        setupArea.style.display = 'none';
+        gameArea.style.display = 'block';
+        roomTitle.innerText = `Room Code: ${res.roomId}`;
+      });
+    });
+
+    document.getElementById('join-btn').addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const roomId = roomCodeInput.value.trim();
+      if (!username || !roomId) return alert('Enter username and room code!');
+
+      socket.emit('join_room', { roomId, username }, (res) => {
+        if (!res.success) return alert(res.error);
+        setupArea.style.display = 'none';
+        gameArea.style.display = 'block';
+        roomTitle.innerText = `Room Code: ${roomId.toUpperCase()}`;
+      });
+    });
+
+    socket.on('room_state_updated', (room) => {
+      playersList.innerHTML = '';
+      Object.values(room.players).forEach(player => {
+        const li = document.createElement('li');
+        li.innerText = player.username + (player.isHost ? ' (Host)' : '');
+        playersList.appendChild(li);
+
+        if (player.id === socket.id && player.isHost) {
+          hostNotice.style.display = 'block';
+        }
+      });
     });
   </script>
 </body>

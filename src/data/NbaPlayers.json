@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "name": "LeBron James",
+    "team": "Los Angeles Lakers",
+    "aliases": ["lebron", "lebron james", "king james", "bron"]
+  },
+  {
+    "id": "2",
+    "name": "Stephen Curry",
+    "team": "Golden State Warriors",
+    "aliases": ["steph", "stephen curry", "chef curry", "steph curry"]
+  },
+  {
+    "id": "3",
+    "name": "Giannis Antetokounmpo",
+    "team": "Milwaukee Bucks",
+    "aliases": ["giannis", "giannis antetokounmpo", "greek freak"]
+  },
+  {
+    "id": "4",
+    "name": "Luka Doncic",
+    "team": "Dallas Mavericks",
+    "aliases": ["luka", "luka doncic", "luka magic"]
+  }
+]
